@@ -39,6 +39,23 @@ def make_ratings(n_users, n_items, min_rating_per_user, max_rating_per_user,
         rs.shuffle(ratings)
     return ratings
 
+def load_movielens_users(users_file,separator):
+    with open(users_file) as f:
+        users=[]
+        for line in f:
+            line=line.split(separator)[:4]
+            line=[l for l in line]
+            users.append(line)
+    return users
+
+def load_movielens_movies(movies_file,separator):
+    with open(movies_file) as f:
+        movies=[]
+        for line in f:
+            line=line.split(separator)[:3]
+            line=[l for l in line]
+            movies.append(line)
+    return movies
 
 def load_movielens_ratings(ratings_file, separator):
     with open(ratings_file) as f:
@@ -47,10 +64,12 @@ def load_movielens_ratings(ratings_file, separator):
             line = line.split(separator)[:3]
             line = [int(l) for l in line]
             ratings.append(line)
-        ratings = np.array(ratings)
+        ratings=np.array(ratings)
     return ratings
 
 load_movielens_1m_ratings = partial(load_movielens_ratings, separator="::")
+load_movielens_movies=partial(load_movielens_movies,separator="::")
+load_movielens_users=partial(load_movielens_users,separator="::")
 load_movielens_100k_ratings = partial(load_movielens_ratings, separator="\t")
 
 

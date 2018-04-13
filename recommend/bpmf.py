@@ -36,6 +36,7 @@ class BPMF(ModelBase):
         self.n_user = n_user
         self.n_item = n_item
         self.n_feature = n_feature
+        #random seed make sure that random number not change
         self.rand_state = RandomState(seed)
         self.max_rating = float(max_rating) if max_rating is not None else None
         self.min_rating = float(min_rating) if min_rating is not None else None
@@ -45,9 +46,12 @@ class BPMF(ModelBase):
         self.beta = beta
 
         # Inv-Whishart (User features)
+        #np.eye generate a Matric only when a[i][j] i=j   a[i][j]=1 other is 0
         self.WI_user = np.eye(n_feature, dtype='float64')
         self.beta_user = beta_user
         self.df_user = int(df_user) if df_user is not None else n_feature
+        #np.repeat(a,b) represatation is one row b column values=a
+        # np.reshape(a,b) represatation a row b column
         self.mu0_user = np.repeat(mu0_user, n_feature).reshape(n_feature, 1)
 
         # Inv-Whishart (item features)
@@ -57,12 +61,15 @@ class BPMF(ModelBase):
         self.mu0_item = np.repeat(mu0_item, n_feature).reshape(n_feature, 1)
 
         # Latent Variables
+        # np.zeros(a,b) put a row b column values=0
         self.mu_user = np.zeros((n_feature, 1), dtype='float64')
         self.mu_item = np.zeros((n_feature, 1), dtype='float64')
 
         self.alpha_user = np.eye(n_feature, dtype='float64')
         self.alpha_item = np.eye(n_feature, dtype='float64')
 
+        #rand_state.rand(a,b) create a Matric a*b the range from (0-1)
+        #为什么要用0.3乘以矩阵？
         self.user_features_ = 0.3 * self.rand_state.rand(n_user, n_feature)
         self.item_features_ = 0.3 * self.rand_state.rand(n_item, n_feature)
 
@@ -73,10 +80,11 @@ class BPMF(ModelBase):
 
     def fit(self, ratings, n_iters=50):
         """training models"""
-
+        # check the format is right or wrong
         check_ratings(ratings, self.n_user, self.n_item,
                       self.max_rating, self.min_rating)
 
+        #all users the average of the ratings
         self.mean_rating_ = np.mean(ratings[:, 2])
 
         # csr user-item matrix for fast row access (user update)
@@ -165,12 +173,17 @@ class BPMF(ModelBase):
         # same as _update_user_params
         N = self.n_user
         X_bar = np.mean(self.user_features_, 0).reshape((self.n_feature, 1))
+        #np.cov是求出协方差矩阵，协方差的作用是查看cov(x,y)中x，y的关系，如果cov(x,y)>0
+        # 则x,y正相关，如果cov(x,y)<0则x,y负相关，否则x，y独立，互不相关
         S_bar = np.cov(self.user_features_.T)
 
         # mu_{0} - U_bar
         diff_X_bar = self.mu0_user - X_bar
 
         # W_{0}_star
+        #diff_X_bar.T应该是转置的意思
+        # np.dot(a,b) 求a和b的内积
+        # inv是求矩阵的逆
         WI_post = inv(inv(self.WI_user) +
                       N * S_bar +
                       np.dot(diff_X_bar, diff_X_bar.T) *

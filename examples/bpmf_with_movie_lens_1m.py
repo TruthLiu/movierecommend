@@ -53,8 +53,8 @@ train = ratings[:train_size]
 validation = ratings[train_size:]
 
 # models settings
-n_feature = 10
-eval_iters = 20
+n_feature = 20
+eval_iters = 50
 print("n_user: %d, n_item: %d, n_feature: %d, training size: %d, validation size: %d" % (
     n_user, n_item, n_feature, train.shape[0], validation.shape[0]))
 bpmf = BPMF(n_user=n_user, n_item=n_item, n_feature=n_feature,
